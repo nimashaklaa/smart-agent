@@ -355,35 +355,4 @@ docker-compose logs -f
 }
 ```
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Make your changes
-4. Add tests: `python3 test_scalable.py`
-5. Commit your changes: `git commit -am 'Add new feature'`
-6. Push to the branch: `git push origin feature/new-feature`
-7. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- LangChain team for the excellent framework
-- FastAPI for the high-performance web framework
-- Redis for the scalable in-memory data store
-- Google Calendar API for calendar integration
-
-## 📞 Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review the logs for error messages
-3. Open an issue on GitHub
-4. Contact the development team
-
----
-
 **Happy Calendar Management! 📅✨** 
