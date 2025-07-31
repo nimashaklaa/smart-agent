@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 # Get the API key from environment variable
-API_KEY = os.getenv("API_KEY")
+API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Initialize the LLM once
 llm = ChatOpenAI(model_name="gpt-4o-mini", api_key=API_KEY)

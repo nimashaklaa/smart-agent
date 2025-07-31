@@ -1,0 +1,4 @@
+.env
+google_credentials
+credentials.json
+graph_state.json
