@@ -216,10 +216,12 @@ class DistributedSupervisor:
                     'message_list': [('user', message)]
                 })
             else:
+                # Add user message to existing session
                 await state_manager.add_message(session_id, ('user', message))
             
             # Determine required capabilities based on message
             required_capabilities = self._analyze_message_capabilities(message)
+            logger.info(f"Message: '{message}' -> Capabilities: {required_capabilities}")
             
             # Get available supervisor
             supervisor_id = await self.load_balancer.get_available_supervisor(
@@ -232,7 +234,7 @@ class DistributedSupervisor:
                     'status': 'error'
                 }
             
-            # Process the message
+            # Process the message with context
             result = await self._process_with_supervisor(session_id, message, supervisor_id)
             
             return result
@@ -253,17 +255,29 @@ class DistributedSupervisor:
         message_lower = message.lower()
         capabilities = []
         
-        if any(word in message_lower for word in ['check', 'available', 'free']):
-            capabilities.append('calendar')
-        
-        if any(word in message_lower for word in ['schedule', 'add', 'create', 'book']):
+        # Check for scheduling keywords
+        scheduling_keywords = ['schedule', 'add', 'create', 'book', 'set up', 'arrange', 'plan']
+        if any(keyword in message_lower for keyword in scheduling_keywords):
             capabilities.append('scheduling')
+            # Don't add calendar capability for scheduling to avoid conflicts
+            return capabilities
         
-        if any(word in message_lower for word in ['modify', 'edit', 'change', 'update']):
+        # Check for modification keywords
+        modification_keywords = ['modify', 'edit', 'change', 'update', 'reschedule']
+        if any(keyword in message_lower for keyword in modification_keywords):
             capabilities.append('modification')
+            return capabilities
         
-        if any(word in message_lower for word in ['delete', 'remove', 'cancel']):
+        # Check for deletion keywords
+        deletion_keywords = ['delete', 'remove', 'cancel', 'delete']
+        if any(keyword in message_lower for keyword in deletion_keywords):
             capabilities.append('deletion')
+            return capabilities
+        
+        # Check for calendar/availability keywords
+        calendar_keywords = ['check', 'available', 'free', 'availability', 'what', 'when']
+        if any(keyword in message_lower for keyword in calendar_keywords):
+            capabilities.append('calendar')
         
         return capabilities if capabilities else ['calendar']  # Default capability
     
@@ -276,11 +290,19 @@ class DistributedSupervisor:
             if not session:
                 raise ValueError("Session not found")
             
-            # Create state for LangGraph
-            state = {
-                'next': session.current_node,
-                'message_list': session.message_list
-            }
+            # Build conversation context from session history
+            conversation_context = ""
+            if session.message_list:
+                # Get the last few messages for context
+                recent_messages = session.message_list[-6:]  # Last 6 messages
+                for role, content in recent_messages:
+                    if role == 'user':
+                        conversation_context += f"User: {content}\n"
+                    elif role == 'ai':
+                        conversation_context += f"Assistant: {content}\n"
+            
+            # Add current message
+            conversation_context += f"User: {message}\n"
             
             # Process with appropriate agent based on message analysis
             capabilities = self._analyze_message_capabilities(message)
@@ -294,10 +316,15 @@ class DistributedSupervisor:
             else:
                 agent_name = 'calendar_checker_agent'
             
-            # Execute agent
+            logger.info(f"Selected agent: {agent_name} for capabilities: {capabilities}")
+            
+            # Execute agent with context
             if agent_registry.is_agent_available(agent_name):
                 try:
+                    # Pass the current message to the agent (agents expect simple message format)
                     result = await agent_registry.execute_agent(agent_name, message)
+                    
+                    logger.info(f"Agent {agent_name} executed successfully")
                     
                     # Update session
                     await state_manager.add_message(session_id, ('ai', f"{agent_name}: {result}"))
@@ -314,6 +341,7 @@ class DistributedSupervisor:
                         'status': 'error'
                     }
             else:
+                logger.error(f"Agent {agent_name} not available")
                 return {
                     'error': f'Agent {agent_name} not available',
                     'status': 'error'

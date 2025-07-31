@@ -13,6 +13,9 @@ st.title("AI Calendar Assistant 📅")
 with st.sidebar:
     st.header("System Status")
     
+    # Debug mode toggle
+    debug_mode = st.checkbox("Debug Mode", value=False)
+    
     # Health check
     try:
         health_response = requests.get(f"{BASE_URL}/health")
@@ -85,38 +88,60 @@ if ipt:
         if response.status_code == 200:
             # Stream the response
             assistant_message = ""
-            current_role = "assistant"
+            full_response = ""
             
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 
+                # Collect all chunks first
+                chunks = []
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         decoded_chunk = chunk.decode("utf-8").strip()
                         if decoded_chunk:
-                            # Parse the response to extract agent and message
-                            if ":" in decoded_chunk:
-                                agent_part, message_part = decoded_chunk.split(":", 1)
-                                agent_name = agent_part.strip()
-                                message_content = message_part.strip()
-                                
-                                # Update the display with the agent name
-                                display_text = f"**{agent_name}**: {message_content}"
-                                assistant_message = display_text
-                                
-                                # Stream the response
-                                for word in response_generator(display_text):
-                                    message_placeholder.markdown(word)
-                                    time.sleep(0.05)
-                            else:
-                                # Fallback for simple responses
-                                assistant_message = decoded_chunk
-                                for word in response_generator(decoded_chunk):
-                                    message_placeholder.markdown(word)
-                                    time.sleep(0.05)
+                            chunks.append(decoded_chunk)
+                            full_response += decoded_chunk + "\n"
                 
-                # Add to chat history
-                st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                # Process all chunks
+                for chunk in chunks:
+                    if debug_mode:
+                        st.sidebar.text(f"Debug: Processing chunk: {chunk}")
+                    
+                    if ":" in chunk:
+                        agent_part, message_part = chunk.split(":", 1)
+                        agent_name = agent_part.strip()
+                        message_content = message_part.strip()
+                        
+                        # Update the display with the agent name
+                        display_text = f"**{agent_name}**: {message_content}"
+                        assistant_message = display_text
+                        
+                        if debug_mode:
+                            st.sidebar.text(f"Debug: Agent message: {display_text}")
+                        
+                        # Update the placeholder immediately
+                        message_placeholder.markdown(display_text)
+                        break  # Use the first agent message
+                    else:
+                        # Fallback for simple responses
+                        assistant_message = chunk
+                        message_placeholder.markdown(chunk)
+                        
+                        if debug_mode:
+                            st.sidebar.text(f"Debug: Simple message: {chunk}")
+                
+                # Add to chat history after processing
+                if assistant_message:
+                    st.session_state.messages.append({"role": "assistant", "content": assistant_message})
+                else:
+                    # If no specific agent message, add the full response
+                    st.session_state.messages.append({"role": "assistant", "content": full_response.strip()})
+                
+                # Alternative: Use a simpler approach without rerun
+                if not assistant_message and full_response.strip():
+                    message_placeholder.markdown(full_response.strip())
+                    st.session_state.messages.append({"role": "assistant", "content": full_response.strip()})
+                
         else:
             error_message = f"Error: {response.status_code} - {response.text}"
             st.error(error_message)

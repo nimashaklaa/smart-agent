@@ -127,7 +127,6 @@ def event_scheduler_agent(query):
         print("---------------")"""
     for step in calendar_agent.stream({"messages": [("human", query)]},stream_mode="debug"):
         continue
-    print("Last Message: ",step["messages"][-1].content)
     
     # Handle different step formats
     if "messages" in step:
@@ -136,6 +135,17 @@ def event_scheduler_agent(query):
         return step["agent"]["messages"][-1].content
     elif "output" in step:
         return step["output"]
+    elif "payload" in step and "result" in step["payload"]:
+        # Handle the new format with payload.result
+        result = step["payload"]["result"]
+        if isinstance(result, list) and len(result) > 0:
+            # Extract the message content from the result
+            for item in result:
+                if isinstance(item, tuple) and len(item) == 2 and item[0] == "messages":
+                    messages = item[1]
+                    if messages and hasattr(messages[-1], 'content'):
+                        return messages[-1].content
+        return str(step)
     else:
         # Fallback: return the step itself as string
         return str(step)
