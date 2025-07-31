@@ -56,18 +56,28 @@ if ipt:
     with st.chat_message("assistant"):
         typing_placeholder = st.empty()
         
-        # Show different typing states with dots animation
-        typing_states = [
-            "🤖 **AI Assistant** is thinking",
-            "🤖 **AI Assistant** is processing your request",
-            "🤖 **AI Assistant** is checking your calendar",
-            "🤖 **AI Assistant** is preparing your response"
+        # Create animated typing indicator
+        typing_indicators = [
+            "🤖 **AI Assistant** is thinking ⏳",
+            "🤖 **AI Assistant** is thinking ⏳.",
+            "🤖 **AI Assistant** is thinking ⏳..",
+            "🤖 **AI Assistant** is thinking ⏳...",
+            "🤖 **AI Assistant** is processing your request ⏳",
+            "🤖 **AI Assistant** is processing your request ⏳.",
+            "🤖 **AI Assistant** is processing your request ⏳..",
+            "🤖 **AI Assistant** is processing your request ⏳...",
+            "🤖 **AI Assistant** is checking your calendar ⏳",
+            "🤖 **AI Assistant** is checking your calendar ⏳.",
+            "🤖 **AI Assistant** is checking your calendar ⏳..",
+            "🤖 **AI Assistant** is checking your calendar ⏳...",
+            "🤖 **AI Assistant** is preparing your response ⏳",
+            "🤖 **AI Assistant** is preparing your response ⏳.",
+            "🤖 **AI Assistant** is preparing your response ⏳..",
+            "🤖 **AI Assistant** is preparing your response ⏳..."
         ]
         
-        # Show initial typing state with dots
-        current_state = 0
-        dots = ""
-        typing_placeholder.markdown(f"{typing_states[current_state]}{dots}")
+        # Show initial typing state
+        typing_placeholder.markdown(typing_indicators[0])
         
         # Send request to backend server
         try:
