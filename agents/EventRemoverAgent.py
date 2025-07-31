@@ -70,5 +70,15 @@ def event_remover_agent(query):
     for step in calendar_agent.stream({"messages": [("human", query)]}):
         continue
     #print("Last Message: ",step["messages"][-1].content)
-    return step["messages"][-1].content
+    
+    # Handle different step formats
+    if "messages" in step:
+        return step["messages"][-1].content
+    elif "agent" in step and "messages" in step["agent"]:
+        return step["agent"]["messages"][-1].content
+    elif "output" in step:
+        return step["output"]
+    else:
+        # Fallback: return the step itself as string
+        return str(step)
            

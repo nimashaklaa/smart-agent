@@ -94,17 +94,17 @@ def event_modifier_agent(query):
     calendar_agent = create_react_agent(model=llm,tools=tools,prompt=prompt)
 
     for step in calendar_agent.stream({"messages": [("human", query)]}):
-        for key, value in step.items():
-            print(key)
-            if key == "agent":
-                print(value["messages"])
-                continue
-            print(value)
-        print("---------------")
-    """
-    for step in calendar_agent.stream({"messages": [("human", query)]}):
         continue
-    """
     #print("Last Message: ",step["messages"][-1].content)
-    return step["messages"][-1].content
+    
+    # Handle different step formats
+    if "messages" in step:
+        return step["messages"][-1].content
+    elif "agent" in step and "messages" in step["agent"]:
+        return step["agent"]["messages"][-1].content
+    elif "output" in step:
+        return step["output"]
+    else:
+        # Fallback: return the step itself as string
+        return str(step)
            

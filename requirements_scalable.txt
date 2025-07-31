@@ -1,0 +1,55 @@
+# Core LangChain and LangGraph dependencies
+langchain-core==0.3.56
+langchain-openai==0.3.14
+langgraph==0.3.34
+langgraph-checkpoint==2.0.24
+langgraph-prebuilt==0.1.8
+langgraph-sdk==0.1.63
+langsmith==0.3.37
+# FastAPI and async dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.11.3
+pydantic_core==2.33.1
+
+# Redis for scalable state management
+redis==5.0.1
+aioredis==2.0.1
+
+# Async and concurrency
+asyncio-mqtt==0.16.1
+aiofiles==23.2.1
+httpx==0.28.1
+
+# Google Calendar API
+google-api-python-client==2.168.0
+google-auth==2.39.0
+google-auth-oauthlib==1.2.2
+google-auth-httplib2==0.2.0
+
+# Date and time handling
+python-dateutil==2.9.0.post0
+dateparser==1.2.1
+pytz==2025.2
+
+# Logging and monitoring
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Development and testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# Additional utilities
+python-dotenv==1.1.0
+typing-extensions==4.13.2
+annotated-types==0.7.0
+
+# Existing dependencies from original requirements
+openai==1.76.0
+tiktoken==0.9.0
+beautifulsoup4==4.13.4
+requests==2.32.3
+orjson==3.10.16
+packaging==24.2 
