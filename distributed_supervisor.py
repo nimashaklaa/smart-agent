@@ -255,27 +255,30 @@ class DistributedSupervisor:
         message_lower = message.lower()
         capabilities = []
         
-        # Check for scheduling keywords
-        scheduling_keywords = ['schedule', 'add', 'create', 'book', 'set up', 'arrange', 'plan']
+        # Check for scheduling keywords - more comprehensive list
+        scheduling_keywords = [
+            'schedule', 'add', 'create', 'book', 'set up', 'arrange', 'plan',
+            'schdule', 'meeting', 'appointment', 'reserve', 'organize'
+        ]
         if any(keyword in message_lower for keyword in scheduling_keywords):
             capabilities.append('scheduling')
             # Don't add calendar capability for scheduling to avoid conflicts
             return capabilities
         
         # Check for modification keywords
-        modification_keywords = ['modify', 'edit', 'change', 'update', 'reschedule']
+        modification_keywords = ['modify', 'edit', 'change', 'update', 'reschedule', 'move']
         if any(keyword in message_lower for keyword in modification_keywords):
             capabilities.append('modification')
             return capabilities
         
         # Check for deletion keywords
-        deletion_keywords = ['delete', 'remove', 'cancel', 'delete']
+        deletion_keywords = ['delete', 'remove', 'cancel', 'delete', 'cancel']
         if any(keyword in message_lower for keyword in deletion_keywords):
             capabilities.append('deletion')
             return capabilities
         
         # Check for calendar/availability keywords
-        calendar_keywords = ['check', 'available', 'free', 'availability', 'what', 'when']
+        calendar_keywords = ['check', 'available', 'free', 'availability', 'what', 'when', 'hi', 'hello']
         if any(keyword in message_lower for keyword in calendar_keywords):
             capabilities.append('calendar')
         
@@ -321,8 +324,8 @@ class DistributedSupervisor:
             # Execute agent with context
             if agent_registry.is_agent_available(agent_name):
                 try:
-                    # Pass the current message to the agent (agents expect simple message format)
-                    result = await agent_registry.execute_agent(agent_name, message)
+                    # Pass the full conversation context to the agent for better understanding
+                    result = await agent_registry.execute_agent(agent_name, conversation_context)
                     
                     logger.info(f"Agent {agent_name} executed successfully")
                     
